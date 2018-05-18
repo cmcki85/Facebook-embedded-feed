@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Facebook Authorization</title>
+    <link rel="stylesheet" href="https://bootswatch.com/4/cosmo/bootstrap.min.css">
+    <style media="screen">
+        #profile, #logout, #feed, #myInput, #prof{display: none}
+        #heading, #prof{padding-top: 10px}
+        
+#myInput {
+    width: 100%; /* Full-width */
+    font-size: 16px; /* Increase font-size */
+    padding: 12px 20px 12px 20px; /* Add some padding */
+    border: 1px solid #ddd; /* Add a grey border */
+    margin-bottom: 12px; /* Add some space below the input */
+}
+
+#myUL {
+    /* Remove default list styling */
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+#myUL li a {
+    border: 1px solid #ddd; /* Add a border to all links */
+    margin-top: -1px; /* Prevent double borders */
+    background-color: #f6f6f6; /* Grey background color */
+    padding: 12px; /* Add some padding */
+    text-decoration: none; /* Remove default text underline */
+    font-size: 18px; /* Increase the font-size */
+    color: black; /* Add a black text color */
+    display: block; /* Make it into a block element to fill the whole list */
+}
+
+#myUL li a:hover:not(.header) {
+    background-color: #eee; /* Add a hover effect to all links, except for headers */
+}
+
+    </style>
+</head>
+<body>   
+        <script>
+            window.fbAsyncInit = function() {
+            FB.init({
+                appId      : '179308979397862',
+                cookie     : true,
+                xfbml      : true,
+                version    : 'v3.0'
+            });
+                
+            
+                FB.getLoginStatus(function(response) {
+                    statusChangeCallback(response);
+                });   
+                
+            };
+        
+            (function(d, s, id){
+            var js, fjs = d.getElementsByTagName(s)[0];
+            if (d.getElementById(id)) {return;}
+            js = d.createElement(s); js.id = id;
+            js.src = "https://connect.facebook.net/en_US/sdk.js";
+            fjs.parentNode.insertBefore(js, fjs);
+            }(document, 'script', 'facebook-jssdk'));
+            
+            function statusChangeCallback(response){
+                if(response.status === 'connected'){
+                    console.log('Logged in and Authenticated');
+                    setElements(true);
+                    testAPI();
+                } else {
+                    console.log('Not Authenticated');
+                    setElements(false);
+                }
+            }
+        
+            function testAPI(){
+                FB.api('/me?fields=name,email,birthday,location', function(response){   //call to permisions
+                    if(response && !response.error){
+                        //console.log(response);
+                        buildProfile(response);
+                    }
+
+                FB.api('me/feed', function(response){
+                       if(response && !response.error){
+                       console.log(response);
+                       buildFeed(response);
+                    }
+                    });
+                })
+            }
+
+            function buildProfile(user){
+                let profile = `
+                <h3>${user.name}</h3>
+                <ul calss="list-group">
+                    <li class="list-group-item">User ID: ${user.id}</li>
+                    <li class="list-group-item">Email: ${user.email}</li>
+                    <li class="list-group-item">Birthday: ${user.birthday}</li>
+                    <li class="list-group-item">Location: ${user.location.name}</li>
+                </ul>
+                `;
+
+                document.getElementById('profile').innerHTML = profile;
+            }
+
+            function buildFeed(feed){
+                let output = '<h3>Latest Posts:</h3>';
+                for(let i in feed.data){
+                    if(feed.data[i].message){
+                        output += `
+                        <div class="well">
+                        ${feed.data[i].message} <span><h6>${feed.data[i].created_time}</h6></span>
+                        </div>
+                        `;
+                    }
+                }
+                document.getElementById('feed').innerHTML = output;
+            }
+
+            
+
+            function checkLoginState() {
+            FB.getLoginStatus(function(response) {
+                statusChangeCallback(response);
+            });
+        }
+        
+        function setElements(isLoggedIn){
+            if(isLoggedIn){
+                document.getElementById('logout').style.display = 'block';
+                document.getElementById('profile').style.display = 'block';
+                document.getElementById('feed').style.display = 'block';
+                document.getElementById('myInput').style.display = 'block';
+                document.getElementById('prof').style.display = 'block';
+                document.getElementById('fb-btn').style.display = 'none';
+                document.getElementById('heading').style.display = 'none';
+            }else{
+                document.getElementById('logout').style.display = 'none';
+                document.getElementById('profile').style.display = 'none';
+                document.getElementById('feed').style.display = 'none';
+                document.getElementById('myInput').style.display = 'none';
+                document.getElementById('prof').style.display = 'none';
+                document.getElementById('fb-btn').style.display = 'block';
+                document.getElementById('heading').style.display = 'block';
+            }
+        }
+        
+        function logout(){
+            FB.logout(function(response){
+                setElements(false);
+            });
+        }
+
+        function myFunction(){
+            var input, filter, ul, li, a, i;
+            input = document.getElementById('myInput');
+            filter = input.value.toUpperCase();
+            ul = document.getElementById('myUL');
+            li = ul.getElementsByTagName('li');
+
+            for (i = 0; i < li.length; i++){
+                a = li[i].getElementByTagName('a')[0];
+                if (a.innerHTML.toUpperCase().indexOf(filter) > -1) {
+                    li[i].style.display = "";
+                }else{
+                    li[i].style.display = "none";
+                }
+            }
+            
+        }
+
+        </script> 
+    
+    <nav class="navbar navbar-expand-md navbar-dark bg-dark">
+            <a class="navbar-brand" href="#">Social Authentication</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault" aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
+              <span class="navbar-toggler-icon"></span>
+            </button>
+      
+            <div class="collapse navbar-collapse" id="navbarsExampleDefault">
+              <ul class="navbar-nav mr-auto">
+                <li class="nav-item active">
+                  <a class="nav-link" href="Index.html">Home <span class="sr-only">(current)</span></a>
+                </li>
+              </ul>
+              <ul class="navbar-nav navbar-right nav-link navbar">
+                  <li><a id="logout" href="#" onclick="logout()">Logout</a></li>
+                        <fb:login-button 
+                        id="fb-btn"
+                        scope="public_profile,email,user_birthday,user_location,user_posts,publish_actions"
+                        onlogin="checkLoginState();"> <!--This is where permissions are called for-->
+                        </fb:login-button>
+              </ul>           
+            </div>
+          </nav>
+          
+          <div class="container">
+            <h3 id="heading">Log in to view your profile</h3>
+            <div>
+                <h3 id="prof">Profanity Search:</h3>    
+                <input type="text" id="myInput" onkeyup="myFunction()" placeholder="Search for profanity..">
+            </div>
+            <div id="profile"></div>
+            <div>
+                <ul id="myUL">
+                    <li id="feed">
+                        <a id="feed"></a>
+                    </li>
+                </ul>
+            </div>
+            
+          </div>
+
+
+
+
+   
+</body>
+</html>
